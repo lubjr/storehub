@@ -1,0 +1,17 @@
+# Laravel
+backend/.env
+backend/vendor/
+backend/storage/*.key
+backend/storage/logs/
+backend/bootstrap/cache/
+
+# React/Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+
+# Docker / ambiente
+.env
+*.log
+.DS_Store
