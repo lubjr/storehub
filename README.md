@@ -272,10 +272,11 @@ Authorization: Bearer <token>
 - **Product detail** — full product page with category, description and price
 - **Create product** — form at `/products/new`, accessible only when authenticated
 - **Edit product** — pre-filled form at `/products/:id/edit`, accessible only when authenticated
-- **Delete product** — confirmation dialog, redirects to home on success
-- **Register / Login** — forms connected to the Sanctum API, token stored in `localStorage`
-- **Auth state** — global `AuthContext` keeps session across page navigations
+- **Delete product** — confirmation dialog with error feedback on failure, redirects to home on success
+- **Register / Login** — forms connected to the Sanctum API; register requires password confirmation; token stored in `localStorage`
+- **Auth state** — persists across page refreshes and navigations; user data survives browser reload
 - **Token interceptor** — Axios automatically attaches `Authorization: Bearer <token>` on every request
+- **Expired token handling** — 401 responses automatically clear the session and redirect to `/login`
 - **Protected routes** — unauthenticated users are redirected to `/login`
 
 ---
