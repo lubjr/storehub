@@ -1,18 +1,9 @@
-import { createContext, useState } from 'react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import client from '../api/client';
+import { AuthContext } from './auth-context';
+import type { AuthContextType } from './auth-context';
 import type { User } from '../types';
-
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, passwordConfirmation: string) => Promise<void>;
-  logout: () => void;
-  isAuthenticated: boolean;
-}
-
-export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
@@ -25,7 +16,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const login = async (email: string, password: string) => {
+  const login: AuthContextType['login'] = async (email, password) => {
     const { data } = await client.post('/login', { email, password });
     setToken(data.token);
     setUser(data.user);
@@ -33,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('user', JSON.stringify(data.user));
   };
 
-  const register = async (name: string, email: string, password: string, passwordConfirmation: string) => {
+  const register: AuthContextType['register'] = async (name, email, password, passwordConfirmation) => {
     const { data } = await client.post('/register', {
       name,
       email,
@@ -46,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('user', JSON.stringify(data.user));
   };
 
-  const logout = () => {
+  const logout: AuthContextType['logout'] = () => {
     client.post('/logout').finally(() => {
       setToken(null);
       setUser(null);

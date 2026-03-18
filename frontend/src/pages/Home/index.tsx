@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { Link } from 'react-router-dom';
 import client from '../../api/client';
 import { ProductCard } from '../../components/ProductCard';
@@ -8,16 +8,33 @@ import { Pagination } from '../../components/Pagination';
 import { useAuth } from '../../hooks/useAuth';
 import type { Product, Category, PaginatedResponse } from '../../types';
 
+interface ProductsState {
+  loading: boolean;
+  error: boolean;
+  data: PaginatedResponse<Product> | null;
+}
+
+type ProductsAction =
+  | { type: 'FETCH_START' }
+  | { type: 'FETCH_SUCCESS'; payload: PaginatedResponse<Product> }
+  | { type: 'FETCH_ERROR' };
+
+function productsReducer(_state: ProductsState, action: ProductsAction): ProductsState {
+  switch (action.type) {
+    case 'FETCH_START':   return { loading: true,  error: false, data: null };
+    case 'FETCH_SUCCESS': return { loading: false, error: false, data: action.payload };
+    case 'FETCH_ERROR':   return { loading: false, error: true,  data: null };
+  }
+}
+
 export function Home() {
   const { isAuthenticated, logout } = useAuth();
-  const [products, setProducts] = useState<PaginatedResponse<Product> | null>(null);
+  const [productsState, dispatch] = useReducer(productsReducer, { loading: true, error: false, data: null });
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -32,22 +49,22 @@ export function Home() {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    setError(false);
+    dispatch({ type: 'FETCH_START' });
     const params: Record<string, unknown> = { page };
     if (debouncedSearch) params.search = debouncedSearch;
     if (categoryId) params.category = categoryId;
 
     client.get('/products', { params })
-      .then(({ data }) => setProducts(data))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .then(({ data }) => dispatch({ type: 'FETCH_SUCCESS', payload: data }))
+      .catch(() => dispatch({ type: 'FETCH_ERROR' }));
   }, [debouncedSearch, categoryId, page]);
 
   const handleCategorySelect = (id: number | null) => {
     setCategoryId(id);
     setPage(1);
   };
+
+  const { loading, error, data: products } = productsState;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -69,7 +86,7 @@ export function Home() {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-sm text-gray-600 hover:text-gray:900">Login</Link>
+                <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900">Login</Link>
                 <Link to="/register" className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700">
                   Register
                 </Link>
