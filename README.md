@@ -1,0 +1,275 @@
+# StoreHub
+
+A product catalog REST API with a React frontend, built as a full-stack monorepo. The backend follows a layered architecture (Repository + Service pattern) with token-based authentication via Laravel Sanctum. Everything runs through Docker Compose with a single command.
+
+---
+
+## Tech Stack
+
+| Layer      | Technology                              |
+|------------|-----------------------------------------|
+| Backend    | Laravel 12, PHP 8.4, Laravel Sanctum    |
+| Frontend   | React 19, Vite, TypeScript, Tailwind CSS v4 |
+| Database   | MySQL 8                                 |
+| Server     | Nginx (reverse proxy + SPA serving)     |
+| Runtime    | Docker, Docker Compose                  |
+
+---
+
+## Architecture
+
+### Backend — Layered Architecture
+
+```
+HTTP Request
+    │
+    ▼
+Controller        — receives request, returns response. No business logic.
+    │
+    ▼
+FormRequest       — validates and sanitizes input before it reaches the controller.
+    │
+    ▼
+Service           — contains all business logic. Orchestrates repository calls.
+    │
+    ▼
+Repository        — single point of database access. Implements an interface.
+    │
+    ▼
+Eloquent Model    — defines relationships and fillable fields.
+```
+
+**Why this structure?**
+- Controllers stay thin and readable — one responsibility: HTTP in/out.
+- Services own the logic, making it testable independently of HTTP.
+- Repositories are bound to interfaces (`ProductRepositoryInterface`), so the data source can be swapped without touching services or controllers (dependency inversion).
+- FormRequests centralize validation, keeping controllers free of `$request->validate()` calls.
+
+### Key backend files
+
+```
+app/
+├── Http/
+│   ├── Controllers/Api/
+│   │   ├── AuthController.php
+│   │   ├── ProductController.php
+│   │   └── CategoryController.php
+│   └── Requests/
+│       ├── Auth/LoginRequest.php
+│       ├── Auth/RegisterRequest.php
+│       └── Product/StoreProductRequest.php
+├── Services/
+│   ├── AuthService.php
+│   ├── ProductService.php
+│   └── CategoryService.php
+├── Repositories/
+│   ├── Contracts/
+│   │   ├── ProductRepositoryInterface.php
+│   │   └── CategoryRepositoryInterface.php
+│   ├── ProductRepository.php
+│   └── CategoryRepository.php
+└── Models/
+    ├── User.php
+    ├── Product.php
+    └── Category.php
+```
+
+### Frontend — React + TypeScript
+
+```
+src/
+├── api/client.ts          — Axios instance with Bearer token interceptor
+├── contexts/AuthContext.tsx — Global auth state (login, register, logout)
+├── hooks/useAuth.ts       — Hook to consume AuthContext
+├── types/index.ts         — TypeScript interfaces (Product, Category, User)
+├── components/
+│   ├── ProductCard.tsx
+│   ├── SearchBar.tsx      — Debounced search input (400ms)
+│   ├── CategoryFilter.tsx
+│   ├── Pagination.tsx
+│   └── ProtectedRoute.tsx
+└── pages/
+    ├── Home/              — Product listing with search, filter and pagination
+    ├── ProductDetail/     — Full product view
+    ├── Login/
+    └── Register/
+```
+
+### Docker — Container layout
+
+```
+┌──────────────────────────────────────────────┐
+│              Docker Compose                   │
+│                                              │
+│  db (MySQL 8)      :3306                     │
+│  backend (PHP-FPM) :9000  ←── internal only  │
+│  nginx             :8080  ←── API exposed     │
+│  frontend          :3000  ←── React SPA       │
+└──────────────────────────────────────────────┘
+```
+
+- `nginx` acts as the reverse proxy for the Laravel backend — it receives HTTP requests and forwards PHP to `backend:9000` via FastCGI.
+- `frontend` is a multi-stage Docker build: Node 20 compiles the Vite app, then Nginx Alpine serves the static `dist/`.
+- `db` has a healthcheck — `backend` only starts after MySQL is ready.
+
+---
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose installed
+- Ports `3000`, `8080`, and `3306` available on your machine
+
+---
+
+## Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/lubjr/storehub.git
+cd storehub
+```
+
+### 2. Configure environment variables
+
+Copy the example file and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+`.env` fields:
+
+| Variable          | Description                              | Example         |
+|-------------------|------------------------------------------|-----------------|
+| `DB_DATABASE`     | MySQL database name                      | `laravel_shop`  |
+| `DB_USERNAME`     | MySQL user                               | `laravel_user`  |
+| `DB_PASSWORD`     | MySQL user password                      | `secret123`     |
+| `DB_ROOT_PASSWORD`| MySQL root password                      | `rootsecret`    |
+| `APP_KEY`         | Laravel app key (generated in step 4)    | `base64:...`    |
+
+### 3. Build and start all containers
+
+```bash
+docker compose up -d --build
+```
+
+This will build and start: `db`, `backend`, `nginx`, and `frontend`.
+
+### 4. Generate the Laravel application key
+
+```bash
+docker compose exec backend php artisan key:generate
+```
+
+### 5. Run migrations and seed the database
+
+```bash
+docker compose exec backend php artisan migrate --force
+docker compose exec backend php artisan db:seed
+```
+
+This creates 5 categories and 50 products with randomized data.
+
+### 6. Access the application
+
+| Service  | URL                          |
+|----------|------------------------------|
+| Frontend | http://localhost:3000        |
+| API      | http://localhost:8080/api    |
+| Health   | http://localhost:8080/api/health |
+
+---
+
+## API Endpoints
+
+### Authentication
+
+| Method | Endpoint        | Auth | Body                                      | Description              |
+|--------|-----------------|------|-------------------------------------------|--------------------------|
+| POST   | `/api/register` | —    | `name`, `email`, `password`, `password_confirmation` | Register a new user. Returns token. |
+| POST   | `/api/login`    | —    | `email`, `password`                       | Login. Returns token.    |
+| POST   | `/api/logout`   | ✅   | —                                         | Revokes current token.   |
+
+### Products
+
+| Method | Endpoint              | Auth | Query params                  | Description                    |
+|--------|-----------------------|------|-------------------------------|--------------------------------|
+| GET    | `/api/products`       | —    | `page`, `search`, `category`  | Paginated product list (15/page). Supports full-text search by name or description and filtering by `category_id`. |
+| GET    | `/api/products/{id}`  | —    | —                             | Single product with category.  |
+| POST   | `/api/products`       | ✅   | —                             | Create a product.              |
+| PUT    | `/api/products/{id}`  | ✅   | —                             | Update a product.              |
+| DELETE | `/api/products/{id}`  | ✅   | —                             | Delete a product. Returns 204. |
+
+**Request body for POST/PUT `/api/products`:**
+```json
+{
+  "name": "Product Name",
+  "description": "Product description",
+  "price": 99.99,
+  "category_id": 1,
+  "image_url": "https://example.com/image.jpg"
+}
+```
+
+### Categories
+
+| Method | Endpoint          | Auth | Description          |
+|--------|-------------------|------|----------------------|
+| GET    | `/api/categories` | —    | List all categories. |
+
+### Authentication header
+
+All protected endpoints require:
+```
+Authorization: Bearer <token>
+```
+
+---
+
+## Frontend Features
+
+- **Product listing** — paginated grid (15 per page) with previous/next controls
+- **Category filter** — clickable chips that filter products server-side
+- **Search** — debounced input (400ms) searches product names and descriptions
+- **Product detail** — full product page with category, description and price
+- **Register / Login** — forms connected to the Sanctum API, token stored in `localStorage`
+- **Auth state** — global `AuthContext` keeps session across page navigations
+- **Token interceptor** — Axios automatically attaches `Authorization: Bearer <token>` on every request
+
+---
+
+## Useful Commands
+
+```bash
+# View logs
+docker compose logs -f backend
+docker compose logs -f nginx
+
+# Re-seed the database
+docker compose exec backend php artisan migrate:fresh --seed
+
+# Stop all containers
+docker compose down
+
+# Stop and remove volumes (resets the database)
+docker compose down -v
+```
+
+---
+
+## Database Schema
+
+```
+categories
+  id, name, timestamps
+
+products
+  id, name, description, price (decimal 10,2),
+  category_id (FK → categories), image_url (nullable), timestamps
+```
+
+`Product` → `belongsTo` → `Category`
+`Category` → `hasMany` → `Product`
+
+All product queries use eager loading (`with('category')`) to prevent N+1 queries.
