@@ -78,19 +78,20 @@ app/
 
 ```
 src/
-├── api/client.ts          — Axios instance with Bearer token interceptor
+├── api/client.ts           — Axios instance with Bearer token interceptor
 ├── contexts/AuthContext.tsx — Global auth state (login, register, logout)
-├── hooks/useAuth.ts       — Hook to consume AuthContext
-├── types/index.ts         — TypeScript interfaces (Product, Category, User)
+├── hooks/useAuth.ts        — Hook to consume AuthContext
+├── types/index.ts          — TypeScript interfaces (Product, Category, User)
 ├── components/
 │   ├── ProductCard.tsx
-│   ├── SearchBar.tsx      — Debounced search input (400ms)
+│   ├── SearchBar.tsx       — Debounced search input (400ms)
 │   ├── CategoryFilter.tsx
 │   ├── Pagination.tsx
-│   └── ProtectedRoute.tsx
+│   └── ProtectedRoute.tsx  — Redirects unauthenticated users to /login
 └── pages/
-    ├── Home/              — Product listing with search, filter and pagination
-    ├── ProductDetail/     — Full product view
+    ├── Home/               — Product listing with search, filter and pagination
+    ├── ProductDetail/      — Full product view with edit and delete (authenticated)
+    ├── ProductForm/        — Create and edit form (protected route)
     ├── Login/
     └── Register/
 ```
@@ -144,14 +145,14 @@ cp .env.example .env
 |-------------------|------------------------------------------|-----------------|
 | `DB_DATABASE`     | MySQL database name                      | `laravel_shop`  |
 | `DB_USERNAME`     | MySQL user                               | `laravel_user`  |
-| `DB_PASSWORD`     | MySQL user password                      | `secret123`     |
-| `DB_ROOT_PASSWORD`| MySQL root password                      | `rootsecret`    |
+| `DB_PASSWORD`     | MySQL user password                      | `your_password`      |
+| `DB_ROOT_PASSWORD`| MySQL root password                      | `your_root_password` |
 | `APP_KEY`         | Laravel app key (generated in step 4)    | `base64:...`    |
 
 ### 3. Build and start all containers
 
 ```bash
-docker compose up -d --build
+docker-compose up -d --build
 ```
 
 This will build and start: `db`, `backend`, `nginx`, and `frontend`.
@@ -159,14 +160,14 @@ This will build and start: `db`, `backend`, `nginx`, and `frontend`.
 ### 4. Generate the Laravel application key
 
 ```bash
-docker compose exec backend php artisan key:generate
+docker-compose exec backend php artisan key:generate
 ```
 
 ### 5. Run migrations and seed the database
 
 ```bash
-docker compose exec backend php artisan migrate --force
-docker compose exec backend php artisan db:seed
+docker-compose exec backend php artisan migrate --force
+docker-compose exec backend php artisan db:seed
 ```
 
 This creates 5 categories and 50 products with randomized data.
@@ -233,9 +234,13 @@ Authorization: Bearer <token>
 - **Category filter** — clickable chips that filter products server-side
 - **Search** — debounced input (400ms) searches product names and descriptions
 - **Product detail** — full product page with category, description and price
+- **Create product** — form at `/products/new`, accessible only when authenticated
+- **Edit product** — pre-filled form at `/products/:id/edit`, accessible only when authenticated
+- **Delete product** — confirmation dialog, redirects to home on success
 - **Register / Login** — forms connected to the Sanctum API, token stored in `localStorage`
 - **Auth state** — global `AuthContext` keeps session across page navigations
 - **Token interceptor** — Axios automatically attaches `Authorization: Bearer <token>` on every request
+- **Protected routes** — unauthenticated users are redirected to `/login`
 
 ---
 
@@ -243,17 +248,17 @@ Authorization: Bearer <token>
 
 ```bash
 # View logs
-docker compose logs -f backend
-docker compose logs -f nginx
+docker-compose logs backend
+docker-compose logs nginx
 
 # Re-seed the database
-docker compose exec backend php artisan migrate:fresh --seed
+docker-compose exec backend php artisan migrate:fresh --seed
 
 # Stop all containers
-docker compose down
+docker-compose down
 
 # Stop and remove volumes (resets the database)
-docker compose down -v
+docker-compose down -v
 ```
 
 ---

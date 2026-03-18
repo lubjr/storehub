@@ -18,7 +18,6 @@ export function Home() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -27,12 +26,10 @@ export function Home() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Fetch categories once
   useEffect(() => {
     client.get('/categories').then(({ data }) => setCategories(data));
   }, []);
 
-  // Fetch products on filter/page change
   useEffect(() => {
     setLoading(true);
     const params: Record<string, unknown> = { page };
@@ -56,9 +53,17 @@ export function Home() {
           <h1 className="text-2xl font-bold text-indigo-600">StoreHub</h1>
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
-              <button onClick={logout} className="text-sm text-gray-600 hover:text-gray-900">
-                Logout
-              </button>
+              <>
+                <Link
+                  to="/products/new"
+                  className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
+                >
+                  + New Product
+                </Link>
+                <button onClick={logout} className="text-sm text-gray-600 hover:text-gray-900">
+                  Logout
+                </button>
+              </>
             ) : (
               <>
                 <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900">Login</Link>
