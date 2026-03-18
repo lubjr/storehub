@@ -33,7 +33,7 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function create(array $data): Product
     {
-        return Product::create($data);
+        return Product::create($data)->load('category');
     }
 
     public function update(int $id, array $data): Product

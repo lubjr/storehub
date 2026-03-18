@@ -69,7 +69,7 @@ class ProductFactory extends Factory
             'name'        => $product['name'],
             'description' => fake()->sentences(3, true),
             'price'       => fake()->randomFloat(2, 9.99, 499.99),
-            'category_id' => Category::inRandomOrder()->first()->id,
+            'category_id' => Category::factory(),
             'image_url'   => "https://loremflickr.com/640/480/{$product['keyword']}?lock={$lock}",
         ];
     }

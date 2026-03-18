@@ -30,7 +30,7 @@ class ProductController extends Controller
         return new ProductResource($product);
     }
 
-    public function store(StoreProductRequest $request): ProductResource
+    public function store(StoreProductRequest $request): JsonResponse
     {
         $product = $this->productService->createProduct($request->validated());
 
