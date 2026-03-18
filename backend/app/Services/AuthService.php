@@ -16,7 +16,7 @@ class AuthService
             'password' => Hash::make($data['password']),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken(config('app.name'))->plainTextToken;
 
         return ['user' => $user, 'token' => $token];
     }
@@ -28,7 +28,7 @@ class AuthService
         }
 
         $user  = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken(config('app.name'))->plainTextToken;
 
         return ['user' => $user, 'token' => $token];
     }

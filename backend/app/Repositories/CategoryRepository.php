@@ -10,6 +10,6 @@ class CategoryRepository implements CategoryRepositoryInterface
 {
     public function getAll(): Collection
     {
-        return Category::all();
+        return Category::orderBy('name')->get();
     }
 }

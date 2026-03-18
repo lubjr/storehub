@@ -23,7 +23,7 @@ class ProductRepository implements ProductRepositoryInterface
             });
         }
 
-        return $query->paginate(15);
+        return $query->latest()->paginate(15);
     }
 
     public function findById(int $id): Product
@@ -41,7 +41,7 @@ class ProductRepository implements ProductRepositoryInterface
         $product = Product::findOrFail($id);
         $product->update($data);
 
-        return $product->fresh('category');
+        return $product->load('category');
     }
 
     public function delete(int $id): void

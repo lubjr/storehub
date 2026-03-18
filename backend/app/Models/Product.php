@@ -18,6 +18,10 @@ class Product extends Model
         'image_url',
     ];
 
+    protected $casts = [
+        'price' => 'decimal:2',
+    ];
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

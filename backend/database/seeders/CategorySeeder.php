@@ -4,15 +4,20 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = ['Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports'];
+        $now = now();
 
-        foreach ($categories as $name) {
-            Category::create(['name' => $name]);
-        }
+        DB::table('categories')->insert([
+            ['name' => 'Books',          'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'Clothing',       'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'Electronics',    'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'Home & Garden',  'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'Sports',         'created_at' => $now, 'updated_at' => $now],
+        ]);
     }
 }
