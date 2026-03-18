@@ -17,6 +17,7 @@ export function Home() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -32,12 +33,14 @@ export function Home() {
 
   useEffect(() => {
     setLoading(true);
+    setError(false);
     const params: Record<string, unknown> = { page };
     if (debouncedSearch) params.search = debouncedSearch;
     if (categoryId) params.category = categoryId;
 
     client.get('/products', { params })
       .then(({ data }) => setProducts(data))
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [debouncedSearch, categoryId, page]);
 
@@ -66,7 +69,7 @@ export function Home() {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900">Login</Link>
+                <Link to="/login" className="text-sm text-gray-600 hover:text-gray:900">Login</Link>
                 <Link to="/register" className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700">
                   Register
                 </Link>
@@ -84,6 +87,10 @@ export function Home() {
 
         {loading ? (
           <div className="text-center py-16 text-gray-500">Loading...</div>
+        ) : error ? (
+          <div className="text-center py-16 text-red-500">
+            Failed to load products. Please try again.
+          </div>
         ) : products && products.data.length > 0 ? (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

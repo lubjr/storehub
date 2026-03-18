@@ -13,7 +13,7 @@ class ProductResource extends JsonResource
             'id'          => $this->id,
             'name'        => $this->name,
             'description' => $this->description,
-            'price'       => $this->price,
+            'price'       => (float) $this->price,
             'image_url'   => $this->image_url,
             'category'    => new CategoryResource($this->whenLoaded('category')),
             'created_at'  => $this->created_at,

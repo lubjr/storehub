@@ -12,6 +12,7 @@ export function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     client.get(`/products/${id}`)
@@ -23,11 +24,13 @@ export function ProductDetail() {
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     setDeleting(true);
+    setDeleteError('');
     try {
       await client.delete(`/products/${id}`);
       navigate('/');
     } catch {
       setDeleting(false);
+      setDeleteError('Failed to delete product. Please try again.');
     }
   };
 
@@ -40,20 +43,25 @@ export function ProductDetail() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="text-indigo-600 hover:underline text-sm">← Back to products</Link>
           {isAuthenticated && (
-            <div className="flex gap-2">
-              <Link
-                to={`/products/${id}/edit`}
-                className="text-sm px-3 py-1.5 border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50"
-              >
-                Edit
-              </Link>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="text-sm px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60"
-              >
-                {deleting ? 'Deleting...' : 'Delete'}
-              </button>
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex gap-2">
+                <Link
+                  to={`/products/${id}/edit`}
+                  className="text-sm px-3 py-1.5 border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50"
+                >
+                  Edit
+                </Link>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="text-sm px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60"
+                >
+                  {deleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+              {deleteError && (
+                <span className="text-xs text-red-500">{deleteError}</span>
+              )}
             </div>
           )}
         </div>
