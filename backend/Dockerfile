@@ -22,6 +22,8 @@ WORKDIR /var/www/html
 
 COPY . .
 
+RUN mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
+
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 RUN chown -R www-data:www-data /var/www/html/storage \
