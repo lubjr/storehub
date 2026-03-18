@@ -4,15 +4,114 @@ A product catalog REST API with a React frontend, built as a full-stack monorepo
 
 ---
 
+## Getting Started
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose installed
+- Ports `3000`, `8080`, and `3306` available on your machine
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/lubjr/storehub.git
+cd storehub
+```
+
+### 2. Configure environment variables
+
+```bash
+cp .env.example .env
+```
+
+| Variable           | Description                           | Example              |
+|--------------------|---------------------------------------|----------------------|
+| `DB_DATABASE`      | MySQL database name                   | `laravel_shop`       |
+| `DB_USERNAME`      | MySQL user                            | `laravel_user`       |
+| `DB_PASSWORD`      | MySQL user password                   | `your_password`      |
+| `DB_ROOT_PASSWORD` | MySQL root password                   | `your_root_password` |
+| `APP_KEY`          | Laravel app key (generated in step 4) | `base64:...`         |
+
+### 3. Build and start all containers
+
+```bash
+docker compose up -d --build
+```
+
+### 4. Generate the Laravel application key
+
+```bash
+docker compose exec backend php artisan key:generate
+```
+
+### 5. Run migrations and seed the database
+
+```bash
+docker compose exec backend php artisan migrate --force
+docker compose exec backend php artisan db:seed
+```
+
+This creates 5 categories and 50 products with randomized data.
+
+### 6. Access the application
+
+| Service  | URL                              |
+|----------|----------------------------------|
+| Frontend | http://localhost:3000            |
+| API      | http://localhost:8080/api        |
+| Health   | http://localhost:8080/api/health |
+
+---
+
+## Production
+
+Live at: **https://storehub.lubjr.dev**
+
+### Stack
+
+| Component  | Solution                        |
+|------------|---------------------------------|
+| Server     | AWS EC2 t3.small (us-east-1)    |
+| SSL        | Let's Encrypt (auto-renew)      |
+| CI/CD      | GitHub Actions                  |
+
+### CI/CD — Automatic deploy
+
+Every push to `main` triggers the deploy pipeline automatically:
+
+```
+push to main
+    ↓
+GitHub Actions
+    ↓
+SSH into EC2
+    ↓
+git pull + docker compose up -d --build
+    ↓
+php artisan migrate --force + config:cache
+    ↓
+Deploy complete (~2-3 min)
+```
+
+To set up in a new environment, add these secrets in **GitHub → Settings → Secrets → Actions**:
+
+| Secret            | Value                    |
+|-------------------|--------------------------|
+| `SERVER_HOST`     | EC2 public IP            |
+| `SERVER_USER`     | `ubuntu`                 |
+| `SSH_PRIVATE_KEY` | Contents of the `.pem` file |
+
+---
+
 ## Tech Stack
 
-| Layer      | Technology                              |
-|------------|-----------------------------------------|
-| Backend    | Laravel 12, PHP 8.4, Laravel Sanctum    |
-| Frontend   | React 19, Vite, TypeScript, Tailwind CSS v4 |
-| Database   | MySQL 8                                 |
-| Server     | Nginx (reverse proxy + SPA serving)     |
-| Runtime    | Docker, Docker Compose                  |
+| Layer    | Technology                               |
+|----------|------------------------------------------|
+| Backend  | Laravel 12, PHP 8.4, Laravel Sanctum     |
+| Frontend | React 19, Vite, TypeScript, Tailwind CSS v4 |
+| Database | MySQL 8                                  |
+| Server   | Nginx (reverse proxy + SPA serving)      |
+| Runtime  | Docker, Docker Compose                   |
 
 ---
 
@@ -87,13 +186,13 @@ app/
 
 ```
 src/
-├── api/client.ts           — Axios instance with Bearer token interceptor
+├── api/client.ts            — Axios instance with Bearer token interceptor
 ├── contexts/AuthContext.tsx — Global auth state (login, register, logout)
-├── hooks/useAuth.ts        — Hook to consume AuthContext
-├── types/index.ts          — TypeScript interfaces (Product, Category, User)
+├── hooks/useAuth.ts         — Hook to consume AuthContext
+├── types/index.ts           — TypeScript interfaces (Product, Category, User)
 ├── components/
 │   ├── ProductCard.tsx
-│   ├── SearchBar.tsx       — Debounced search input (400ms)
+│   ├── SearchBar.tsx        — Debounced search input (400ms)
 │   ├── CategoryFilter.tsx
 │   ├── Pagination.tsx
 │   └── ProtectedRoute.tsx  — Redirects unauthenticated users to /login
@@ -108,86 +207,21 @@ src/
 ### Docker — Container layout
 
 ```
-┌──────────────────────────────────────────────┐
-│              Docker Compose                   │
-│                                              │
-│  db (MySQL 8)      :3306                     │
-│  backend (PHP-FPM) :9000  ←── internal only  │
-│  nginx             :8080  ←── API exposed     │
-│  frontend          :3000  ←── React SPA       │
-└──────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                  Docker Compose                       │
+│                                                      │
+│  proxy (Nginx)     :80 / :443  ←── public entry      │
+│  nginx (Nginx)     :8080       ←── Laravel reverse proxy │
+│  frontend (Nginx)  :3000       ←── React SPA          │
+│  backend (PHP-FPM) :9000       ←── internal only      │
+│  db (MySQL 8)      :3306       ←── internal only      │
+└──────────────────────────────────────────────────────┘
 ```
 
-- `nginx` acts as the reverse proxy for the Laravel backend — it receives HTTP requests and forwards PHP to `backend:9000` via FastCGI.
+- `proxy` is the public-facing reverse proxy — routes `/api/` to `nginx` and `/` to `frontend`. Handles SSL termination.
+- `nginx` acts as the reverse proxy for the Laravel backend — forwards PHP to `backend:9000` via FastCGI.
 - `frontend` is a multi-stage Docker build: Node 20 compiles the Vite app, then Nginx Alpine serves the static `dist/`.
 - `db` has a healthcheck — `backend` only starts after MySQL is ready.
-
----
-
-## Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) and Docker Compose installed
-- Ports `3000`, `8080`, and `3306` available on your machine
-
----
-
-## Getting Started
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/lubjr/storehub.git
-cd storehub
-```
-
-### 2. Configure environment variables
-
-Copy the example file and fill in your values:
-
-```bash
-cp .env.example .env
-```
-
-`.env` fields:
-
-| Variable          | Description                              | Example         |
-|-------------------|------------------------------------------|-----------------|
-| `DB_DATABASE`     | MySQL database name                      | `laravel_shop`  |
-| `DB_USERNAME`     | MySQL user                               | `laravel_user`  |
-| `DB_PASSWORD`     | MySQL user password                      | `your_password`      |
-| `DB_ROOT_PASSWORD`| MySQL root password                      | `your_root_password` |
-| `APP_KEY`         | Laravel app key (generated in step 4)    | `base64:...`    |
-
-### 3. Build and start all containers
-
-```bash
-docker-compose up -d --build
-```
-
-This will build and start: `db`, `backend`, `nginx`, and `frontend`.
-
-### 4. Generate the Laravel application key
-
-```bash
-docker-compose exec backend php artisan key:generate
-```
-
-### 5. Run migrations and seed the database
-
-```bash
-docker-compose exec backend php artisan migrate --force
-docker-compose exec backend php artisan db:seed
-```
-
-This creates 5 categories and 50 products with randomized data.
-
-### 6. Access the application
-
-| Service  | URL                          |
-|----------|------------------------------|
-| Frontend | http://localhost:3000        |
-| API      | http://localhost:8080/api    |
-| Health   | http://localhost:8080/api/health |
 
 ---
 
@@ -195,21 +229,21 @@ This creates 5 categories and 50 products with randomized data.
 
 ### Authentication
 
-| Method | Endpoint        | Auth | Body                                      | Description              |
-|--------|-----------------|------|-------------------------------------------|--------------------------|
+| Method | Endpoint        | Auth | Body                                                 | Description                         |
+|--------|-----------------|------|------------------------------------------------------|-------------------------------------|
 | POST   | `/api/register` | —    | `name`, `email`, `password`, `password_confirmation` | Register a new user. Returns token. |
-| POST   | `/api/login`    | —    | `email`, `password`                       | Login. Returns token.    |
-| POST   | `/api/logout`   | ✅   | —                                         | Revokes current token.   |
+| POST   | `/api/login`    | —    | `email`, `password`                                  | Login. Returns token.               |
+| POST   | `/api/logout`   | ✅   | —                                                    | Revokes current token.              |
 
 ### Products
 
-| Method | Endpoint              | Auth | Query params                  | Description                    |
-|--------|-----------------------|------|-------------------------------|--------------------------------|
-| GET    | `/api/products`       | —    | `page`, `search`, `category`  | Paginated product list (15/page). Supports full-text search by name or description and filtering by `category_id`. |
-| GET    | `/api/products/{id}`  | —    | —                             | Single product with category.  |
-| POST   | `/api/products`       | ✅   | —                             | Create a product.              |
-| PUT    | `/api/products/{id}`  | ✅   | —                             | Update a product.              |
-| DELETE | `/api/products/{id}`  | ✅   | —                             | Delete a product. Returns 204. |
+| Method | Endpoint             | Auth | Query params                 | Description                                                                                                        |
+|--------|----------------------|------|------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| GET    | `/api/products`      | —    | `page`, `search`, `category` | Paginated product list (15/page). Supports full-text search by name or description and filtering by `category_id`. |
+| GET    | `/api/products/{id}` | —    | —                            | Single product with category.                                                                                      |
+| POST   | `/api/products`      | ✅   | —                            | Create a product.                                                                                                  |
+| PUT    | `/api/products/{id}` | ✅   | —                            | Update a product.                                                                                                  |
+| DELETE | `/api/products/{id}` | ✅   | —                            | Delete a product. Returns 204.                                                                                     |
 
 **Request body for POST/PUT `/api/products`:**
 ```json
@@ -286,7 +320,7 @@ Authorization: Bearer <token>
 The backend has a feature test suite covering all API endpoints. Tests run against an SQLite in-memory database — no running containers required beyond `backend`.
 
 ```bash
-docker-compose exec backend php artisan test
+docker compose exec backend php artisan test
 ```
 
 ```
@@ -306,17 +340,17 @@ PASS  Tests\Feature\ProductTest    (17 tests)
 
 ```bash
 # View logs
-docker-compose logs backend
-docker-compose logs nginx
+docker compose logs backend
+docker compose logs nginx
 
 # Re-seed the database
-docker-compose exec backend php artisan migrate:fresh --seed
+docker compose exec backend php artisan migrate:fresh --seed
 
 # Stop all containers
-docker-compose down
+docker compose down
 
 # Stop and remove volumes (resets the database)
-docker-compose down -v
+docker compose down -v
 ```
 
 ---
