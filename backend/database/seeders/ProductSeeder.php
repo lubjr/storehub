@@ -11,8 +11,9 @@ class ProductSeeder extends Seeder
     {
         $categoryIds = \App\Models\Category::pluck('id')->toArray();
 
-        Product::factory(50)->create([
-            'category_id' => fake()->randomElement($categoryIds),
-        ]);
+        Product::factory(50)->make()->each(function ($product) use ($categoryIds) {
+            $product->category_id = fake()->randomElement($categoryIds);
+            $product->save();
+        });
     }
 }
