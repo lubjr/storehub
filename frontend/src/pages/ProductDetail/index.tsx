@@ -15,7 +15,7 @@ export function ProductDetail() {
 
   useEffect(() => {
     client.get(`/products/${id}`)
-      .then(({ data }) => setProduct(data))
+      .then(({ data }) => setProduct(data.data))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [id]);

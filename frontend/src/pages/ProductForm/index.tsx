@@ -22,8 +22,8 @@ export function ProductForm() {
 
   useEffect(() => {
     client.get('/categories').then(({ data }) => {
-      setCategories(data);
-      if (!isEditing && data.length > 0) setCategoryId(String(data[0].id));
+      setCategories(data.data);
+      if (!isEditing && data.data.length > 0) setCategoryId(String(data.data[0].id));
     });
   }, [isEditing]);
 
@@ -31,11 +31,11 @@ export function ProductForm() {
     if (!isEditing) return;
     client.get(`/products/${id}`)
       .then(({ data }) => {
-        setName(data.name);
-        setDescription(data.description);
-        setPrice(String(data.price));
-        setCategoryId(String(data.category.id));
-        setImageUrl(data.image_url ?? '');
+        setName(data.data.name);
+        setDescription(data.data.description);
+        setPrice(String(data.data.price));
+        setCategoryId(String(data.data.category.id));
+        setImageUrl(data.data.image_url ?? '');
       })
       .finally(() => setFetching(false));
   }, [id, isEditing]);
@@ -59,7 +59,7 @@ export function ProductForm() {
         navigate(`/products/${id}`);
       } else {
         const { data } = await client.post('/products', payload);
-        navigate(`/products/${data.id}`);
+        navigate(`/products/${data.data.id}`);
       }
     } catch {
       setError('Failed to save product. Please check your input and try again.');

@@ -27,7 +27,7 @@ export function Home() {
   }, [search]);
 
   useEffect(() => {
-    client.get('/categories').then(({ data }) => setCategories(data));
+    client.get('/categories').then(({ data }) => setCategories(data.data));
   }, []);
 
   useEffect(() => {
@@ -93,8 +93,8 @@ export function Home() {
             </div>
             <div className="mt-8">
               <Pagination
-                currentPage={products.current_page}
-                lastPage={products.last_page}
+                currentPage={products.meta.current_page}
+                lastPage={products.meta.last_page}
                 onPageChange={setPage}
               />
             </div>
