@@ -37,6 +37,9 @@ Repository        — single point of database access. Implements an interface.
     │
     ▼
 Eloquent Model    — defines relationships and fillable fields.
+    │
+    ▼
+API Resource      — transforms the model into a consistent JSON response contract.
 ```
 
 **Why this structure?**
@@ -44,6 +47,7 @@ Eloquent Model    — defines relationships and fillable fields.
 - Services own the logic, making it testable independently of HTTP.
 - Repositories are bound to interfaces (`ProductRepositoryInterface`), so the data source can be swapped without touching services or controllers (dependency inversion).
 - FormRequests centralize validation, keeping controllers free of `$request->validate()` calls.
+- API Resources decouple the model from the response contract — internal field changes don't silently break the API.
 
 ### Key backend files
 
@@ -54,10 +58,15 @@ app/
 │   │   ├── AuthController.php
 │   │   ├── ProductController.php
 │   │   └── CategoryController.php
-│   └── Requests/
-│       ├── Auth/LoginRequest.php
-│       ├── Auth/RegisterRequest.php
-│       └── Product/StoreProductRequest.php
+│   ├── Requests/
+│   │   ├── Auth/LoginRequest.php
+│   │   ├── Auth/RegisterRequest.php
+│   │   ├── Product/StoreProductRequest.php
+│   │   └── Product/UpdateProductRequest.php
+│   └── Resources/
+│       ├── UserResource.php
+│       ├── ProductResource.php
+│       └── CategoryResource.php
 ├── Services/
 │   ├── AuthService.php
 │   ├── ProductService.php
@@ -213,6 +222,33 @@ This creates 5 categories and 50 products with randomized data.
 }
 ```
 
+**Response format:**
+
+All responses are transformed through API Resources. Single resources are wrapped in a `data` key; paginated collections include `data`, `links`, and `meta`.
+
+```json
+// Single product (GET /api/products/{id})
+{
+  "data": {
+    "id": 1,
+    "name": "Wireless Headphones",
+    "description": "...",
+    "price": "99.99",
+    "image_url": "https://...",
+    "category": { "id": 1, "name": "Electronics" },
+    "created_at": "2026-01-01T00:00:00.000000Z",
+    "updated_at": "2026-01-01T00:00:00.000000Z"
+  }
+}
+
+// Paginated list (GET /api/products)
+{
+  "data": [ ... ],
+  "links": { "first": "...", "last": "...", "prev": null, "next": "..." },
+  "meta":  { "current_page": 1, "per_page": 15, "total": 50, ... }
+}
+```
+
 ### Categories
 
 | Method | Endpoint          | Auth | Description          |
@@ -241,6 +277,27 @@ Authorization: Bearer <token>
 - **Auth state** — global `AuthContext` keeps session across page navigations
 - **Token interceptor** — Axios automatically attaches `Authorization: Bearer <token>` on every request
 - **Protected routes** — unauthenticated users are redirected to `/login`
+
+---
+
+## Running Tests
+
+The backend has a feature test suite covering all API endpoints. Tests run against an SQLite in-memory database — no running containers required beyond `backend`.
+
+```bash
+docker-compose exec backend php artisan test
+```
+
+```
+PASS  Tests\Feature\AuthTest       (8 tests)
+PASS  Tests\Feature\CategoryTest   (3 tests)
+PASS  Tests\Feature\ProductTest    (17 tests)
+```
+
+**What is covered:**
+- Auth: register (validation, duplicate email, password mismatch), login (valid/invalid), logout (authenticated/unauthenticated)
+- Categories: public listing, alphabetical ordering, no timestamp leakage
+- Products: paginated listing, category filter, search, show, 404 handling, create/update/delete (auth vs guest), validation, and response contract (`category_id` not exposed)
 
 ---
 
