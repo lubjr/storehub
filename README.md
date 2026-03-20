@@ -67,31 +67,41 @@ This creates 5 categories and 50 products with randomized data.
 
 Live at: **https://storehub.lubjr.dev**
 
-### Stack
+### Current Stack (Render)
 
-| Component  | Solution                        |
-|------------|---------------------------------|
-| Server     | AWS EC2 t3.small (us-east-1)    |
-| SSL        | Let's Encrypt (auto-renew)      |
-| CI/CD      | GitHub Actions                  |
+| Component  | Solution                          |
+|------------|-----------------------------------|
+| Frontend   | Render Static Site                |
+| Backend    | Render Web Service (Docker)       |
+| Database   | Render PostgreSQL                 |
+| DNS / SSL  | Spaceship + Let's Encrypt (Render)|
+| CI/CD      | Render Auto-Deploy (push to main) |
 
 ### CI/CD — Automatic deploy
 
-Every push to `main` triggers the deploy pipeline automatically:
+Every push to `main` triggers automatic redeploy on Render for both frontend and backend.
 
 ```
 push to main
     ↓
-GitHub Actions
+Render Auto-Deploy
     ↓
-SSH into EC2
+Backend: Docker build + php artisan migrate --force
     ↓
-git pull + docker compose up -d --build
+Frontend: npm ci && npm run build
     ↓
-php artisan migrate --force + config:cache
-    ↓
-Deploy complete (~2-3 min)
+Deploy complete (~3-5 min)
 ```
+
+### Previous Stack (AWS)
+
+The project was initially deployed on AWS EC2. Migrated to Render to reduce hosting costs.
+
+| Component  | Solution                     |
+|------------|------------------------------|
+| Server     | AWS EC2 t3.small (us-east-1) |
+| SSL        | Let's Encrypt (auto-renew)   |
+| CI/CD      | GitHub Actions (SSH to EC2)  |
 
 To set up in a new environment, add these secrets in **GitHub → Settings → Secrets → Actions**:
 
