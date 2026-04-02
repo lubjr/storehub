@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { Navbar } from '../../components/Navbar';
 
 export function Register() {
   const { register } = useAuth();
@@ -34,7 +35,9 @@ export function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-violet-50">
+      <Navbar />
+      <div className="flex items-center justify-center px-4 py-16">
       <div className="bg-white rounded-lg shadow p-8 w-full max-w-sm">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Create account</h2>
 
@@ -52,7 +55,7 @@ export function Register() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
           <div>
@@ -62,7 +65,7 @@ export function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
           <div>
@@ -73,7 +76,7 @@ export function Register() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
           <div>
@@ -84,13 +87,13 @@ export function Register() {
               onChange={(e) => setPasswordConfirmation(e.target.value)}
               required
               minLength={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-60 font-medium"
+            className="w-full bg-violet-600 text-white py-2 rounded-lg hover:bg-violet-700 disabled:opacity-60 font-medium"
           >
             {loading ? 'Creating account...' : 'Create account'}
           </button>
@@ -98,8 +101,9 @@ export function Register() {
 
         <p className="mt-4 text-sm text-gray-600 text-center">
           Already have an account?{' '}
-          <Link to="/login" className="text-indigo-600 hover:underline">Sign in</Link>
+          <Link to="/login" className="text-violet-600 hover:underline">Sign in</Link>
         </p>
+      </div>
       </div>
     </div>
   );

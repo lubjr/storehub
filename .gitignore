@@ -15,3 +15,4 @@ frontend/.env.*.local
 .env
 *.log
 .DS_Store
+.claude

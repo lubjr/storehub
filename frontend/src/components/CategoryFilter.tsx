@@ -13,8 +13,8 @@ export function CategoryFilter({ categories, selected, onSelect }: Props) {
         onClick={() => onSelect(null)}
         className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
           selected === null
-            ? 'bg-indigo-600 text-white'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            ? 'bg-violet-600 text-white'
+            : 'bg-white text-gray-700 hover:bg-violet-50 border border-gray-200'
         }`}
       >
         All
@@ -25,8 +25,8 @@ export function CategoryFilter({ categories, selected, onSelect }: Props) {
           onClick={() => onSelect(cat.id)}
           className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
             selected === cat.id
-              ? 'bg-indigo-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-violet-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-violet-50 border border-gray-200'
           }`}
         >
           {cat.name}
