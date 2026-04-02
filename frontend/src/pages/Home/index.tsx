@@ -4,6 +4,7 @@ import { ProductCard } from '../../components/ProductCard';
 import { CategoryFilter } from '../../components/CategoryFilter';
 import { Pagination } from '../../components/Pagination';
 import { Navbar } from '../../components/Navbar';
+import { Hero } from '../../components/Hero';
 import type { Product, Category, PaginatedResponse } from '../../types';
 
 interface ProductsState {
@@ -66,8 +67,9 @@ export function Home() {
   return (
     <div className="min-h-screen bg-violet-50">
       <Navbar search={search} onSearchChange={setSearch} />
+      <Hero />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-6">
           <CategoryFilter categories={categories} selected={categoryId} onSelect={handleCategorySelect} />
         </div>
