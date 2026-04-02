@@ -44,7 +44,7 @@ export function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
           <div>
@@ -54,13 +54,13 @@ export function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-60 font-medium"
+            className="w-full bg-violet-600 text-white py-2 rounded-lg hover:bg-violet-700 disabled:opacity-60 font-medium"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
@@ -68,7 +68,7 @@ export function Login() {
 
         <p className="mt-4 text-sm text-gray-600 text-center">
           Don't have an account?{' '}
-          <Link to="/register" className="text-indigo-600 hover:underline">Register</Link>
+          <Link to="/register" className="text-violet-600 hover:underline">Register</Link>
         </p>
       </div>
     </div>

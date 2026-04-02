@@ -41,13 +41,13 @@ export function ProductDetail() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-indigo-600 hover:underline text-sm">← Back to products</Link>
+          <Link to="/" className="text-violet-600 hover:underline text-sm">← Back to products</Link>
           {isAuthenticated && (
             <div className="flex flex-col items-end gap-1">
               <div className="flex gap-2">
                 <Link
                   to={`/products/${id}/edit`}
-                  className="text-sm px-3 py-1.5 border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50"
+                  className="text-sm px-3 py-1.5 border border-violet-600 text-violet-600 rounded-lg hover:bg-violet-50"
                 >
                   Edit
                 </Link>
@@ -77,7 +77,7 @@ export function ProductDetail() {
             </div>
           )}
           <div className="p-6 flex flex-col gap-3">
-            <span className="text-xs text-indigo-600 font-medium uppercase tracking-wide">
+            <span className="text-xs text-violet-600 font-medium uppercase tracking-wide">
               {product.category.name}
             </span>
             <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
