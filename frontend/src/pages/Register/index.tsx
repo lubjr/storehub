@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { Navbar } from '../../components/Navbar';
 
 export function Register() {
   const { register } = useAuth();
@@ -34,7 +35,9 @@ export function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-violet-50">
+      <Navbar />
+      <div className="flex items-center justify-center px-4 py-16">
       <div className="bg-white rounded-lg shadow p-8 w-full max-w-sm">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Create account</h2>
 
@@ -100,6 +103,7 @@ export function Register() {
           Already have an account?{' '}
           <Link to="/login" className="text-violet-600 hover:underline">Sign in</Link>
         </p>
+      </div>
       </div>
     </div>
   );

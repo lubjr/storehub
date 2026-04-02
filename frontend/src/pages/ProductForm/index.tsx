@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import client from '../../api/client';
+import { Navbar } from '../../components/Navbar';
 import type { Category } from '../../types';
 
 export function ProductForm() {
@@ -73,16 +74,13 @@ export function ProductForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <button onClick={() => navigate(-1)} className="text-violet-600 hover:underline text-sm">
-            ← Back
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-violet-50">
+      <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-2xl mx-auto px-6 py-8">
+        <button onClick={() => navigate(-1)} className="text-violet-600 hover:underline text-sm mb-6 block">
+          ← Back
+        </button>
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
           {isEditing ? 'Edit Product' : 'New Product'}
         </h1>
