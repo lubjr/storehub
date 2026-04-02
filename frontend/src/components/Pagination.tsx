@@ -12,7 +12,7 @@ export function Pagination({ currentPage, lastPage, onPageChange }: Props) {
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="px-3 py-1 rounded border border-gray-300 text-sm disabled:opacity-40 hover:bg-gray-50"
+        className="px-3 py-1 rounded border border-gray-300 text-sm disabled:opacity-40 hover:bg-violet-50 hover:border-violet-300 transition-colors"
       >
         Previous
       </button>
@@ -22,7 +22,7 @@ export function Pagination({ currentPage, lastPage, onPageChange }: Props) {
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === lastPage}
-        className="px-3 py-1 rounded border border-gray-300 text-sm disabled:opacity-40 hover:bg-gray-50"
+        className="px-3 py-1 rounded border border-gray-300 text-sm disabled:opacity-40 hover:bg-violet-50 hover:border-violet-300 transition-colors"
       >
         Next
       </button>
