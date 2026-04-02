@@ -1,11 +1,9 @@
 import { useEffect, useReducer, useState } from 'react';
-import { Link } from 'react-router-dom';
 import client from '../../api/client';
 import { ProductCard } from '../../components/ProductCard';
-import { SearchBar } from '../../components/SearchBar';
 import { CategoryFilter } from '../../components/CategoryFilter';
 import { Pagination } from '../../components/Pagination';
-import { useAuth } from '../../hooks/useAuth';
+import { Navbar } from '../../components/Navbar';
 import type { Product, Category, PaginatedResponse } from '../../types';
 
 interface ProductsState {
@@ -28,7 +26,6 @@ function productsReducer(_state: ProductsState, action: ProductsAction): Product
 }
 
 export function Home() {
-  const { isAuthenticated, logout } = useAuth();
   const [productsState, dispatch] = useReducer(productsReducer, { loading: true, error: false, data: null });
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState('');
@@ -67,38 +64,11 @@ export function Home() {
   const { loading, error, data: products } = productsState;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-indigo-600">StoreHub</h1>
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/products/new"
-                  className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
-                >
-                  + New Product
-                </Link>
-                <button onClick={logout} className="text-sm text-gray-600 hover:text-gray-900">
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900">Login</Link>
-                <Link to="/register" className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700">
-                  Register
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-violet-50">
+      <Navbar search={search} onSearchChange={setSearch} />
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex flex-col gap-4 mb-6">
-          <SearchBar value={search} onChange={setSearch} />
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <div className="mb-6">
           <CategoryFilter categories={categories} selected={categoryId} onSelect={handleCategorySelect} />
         </div>
 
